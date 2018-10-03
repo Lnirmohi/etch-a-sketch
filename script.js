@@ -1,70 +1,105 @@
-createGrid();
+let grids = [];
 
-function createGrid() {
+createGrid(20);
+
+function createGrid(noOfGrids) {
 
     let container = document.getElementById("game-area");
+    
+    clearContainer(container);
 
-    for(let i = 1; i <= 400; i++) {
+    let sizeOfGrid = container.offsetHeight / noOfGrids;
 
-        let smallDiv = document.createElement("div");
+    container.style.gridTemplateRows = 
+    container.style.gridTemplateColumns = `repeat(${noOfGrids}, ${sizeOfGrid}px)`;
 
-        smallDiv.setAttribute("class", "grid-item");
+    for(let i = 1; i <= (noOfGrids * noOfGrids); i++) {
 
-        smallDiv.setAttribute("id", `grid-item-${i}`);
+        container.appendChild(createSingleGrid(i));
+    }
 
-        container.appendChild(smallDiv);
+    grids =  [...document.getElementsByClassName("grid-item")];
+}
+
+function clearContainer(gameArea) {
+
+    if(gameArea.firstChild) {
+
+        while (gameArea.firstChild) {   
+
+            gameArea.removeChild(gameArea.firstChild);
+        }
     }
 }
 
-let divs = {
-    buttons : {
-        dimension_button : document.getElementById("change-dimension"),
-        random_button : document.getElementById("random-color"),
-        reset_button : document.getElementById("reset"),
-        clear_button : document.getElementById("clear")
-    },
+function createSingleGrid(gridNumber) {
 
-    grids : [...document.getElementsByClassName("grid-item")]
-};
+    let smallDiv = document.createElement("div");
 
-let buttons = document.querySelectorAll(".btn");
+    smallDiv.setAttribute("class", "grid-item");
 
-buttons.forEach( button => button.addEventListener('click', perform));
+    smallDiv.setAttribute("id", `grid-item-${gridNumber}`);
+
+    return smallDiv;
+}
+
+document.querySelectorAll(".btn").forEach( button => button.addEventListener('click', perform));
 
 function perform(event) {
+
     switch(event.srcElement.id) {
+        
         case "change-dimension" : changeDimension();
         break;
 
-        case "random-color" : randomColor();
+        case "random-color" : startSketch("randomColor");
         break;
 
-        case "reset" : reset();
+        case "black" : startSketch("black");
         break;
 
         case "clear" : clear();
+        break;
+
+        case "reset" : reset();
         break;
     }
 }
 
 function changeDimension() {
-    console.log(1);
+
+    reset();
+
+    let newGridNo;
+
+    do{
+
+        newGridNo = parseInt(prompt("Enter number of grids you want to create.\nPlease enter number between 10-64!"));
+
+        console.log(newGridNo);
+        
+    }while(isNaN(newGridNo) || newGridNo < 1 || newGridNo > 64 || newGridNo == "null");
+
+    createGrid(newGridNo);
+
+    startSketch("black");
 }
 
-function randomColor() {
+function startSketch(colorMode) {
 
-    divs.buttons.random_button.addEventListener('click', getRandomColor);
+    grids.forEach(grid => grid.addEventListener("mouseover", giveGridColor));
 
-    function getRandomColor(event) {
-        divs.grids.forEach(grid => grid.addEventListener('mouseover', changeGridColor));
-    }
+    function giveGridColor(event) {
 
-    function changeGridColor(event) {
-    
-        let selectedGrid = document.getElementById(event.srcElement.id); 
-        
-        selectedGrid.style.background = `rgb(${randomRgbValue()}, ${randomRgbValue()}, ${randomRgbValue()})`;
-    
+        let selectedGrid = document.getElementById(event.srcElement.id);
+
+        if(colorMode === "randomColor") {
+
+            selectedGrid.style.background = `rgb(${randomRgbValue()}, ${randomRgbValue()}, ${randomRgbValue()})`;
+        }
+        else {
+            selectedGrid.style.background = colorMode;
+        }
     }
 
     function randomRgbValue() {
@@ -72,10 +107,10 @@ function randomColor() {
     }
 }
 
-function reset() {
-    divs.grids.forEach( grid => grid.style.background = "white");
+function clear() {
+    startSketch("white");
 }
 
-function clear() {
-    console.log(4);
+function reset() {
+    grids.forEach( grid => grid.style.background = "white");
 }
