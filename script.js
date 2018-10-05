@@ -1,28 +1,31 @@
-let grids = [];
+let grids = [],
+    buttons = document.querySelectorAll(".btn");
 
 createGrid(20);
 
 function createGrid(noOfGrids) {
 
-    let container = document.getElementById("game-area");
+    let gameArea = document.getElementById("game-area");
     
-    clearContainer(container);
+    clearContainer(gameArea);
 
-    let sizeOfGrid = container.offsetHeight / noOfGrids;
+    let sizeOfGrid = gameArea.offsetHeight / noOfGrids;
 
-    container.style.gridTemplateRows = 
-    container.style.gridTemplateColumns = `repeat(${noOfGrids}, ${sizeOfGrid}px)`;
+    gameArea.style.gridTemplateRows = 
+    gameArea.style.gridTemplateColumns = `repeat(${noOfGrids}, ${sizeOfGrid}px)`;
 
     for(let i = 1; i <= (noOfGrids * noOfGrids); i++) {
 
-        container.appendChild(createSingleGrid(i));
+        gameArea.appendChild(createSingleGrid(i));
     }
 
     grids =  [...document.getElementsByClassName("grid-item")];
 }
 
+//to clear #game-area to accomodate new grids or else they will bw added to the bottom
 function clearContainer(gameArea) {
 
+    //removing every children of #game-area
     if(gameArea.firstChild) {
 
         while (gameArea.firstChild) {   
@@ -43,9 +46,9 @@ function createSingleGrid(gridNumber) {
     return smallDiv;
 }
 
-document.querySelectorAll(".btn").forEach( button => button.addEventListener('click', perform));
+buttons.forEach( button => button.addEventListener('click', performAction));
 
-function perform(event) {
+function performAction(event) {
 
     switch(event.srcElement.id) {
         
@@ -56,6 +59,9 @@ function perform(event) {
         break;
 
         case "black" : startSketch("black");
+        break;
+
+        case "black-trail" : startSketch("black trail");
         break;
 
         case "clear" : clear();
@@ -71,13 +77,11 @@ function changeDimension() {
     reset();
 
     let newGridNo;
-
+    
+    //validation of input for number of grids between 10-64
     do{
-
-        newGridNo = parseInt(prompt("Enter number of grids you want to create.\nPlease enter number between 10-64!"));
-
-        console.log(newGridNo);
-        
+        //prompt returns a string so parse it into number
+        newGridNo = parseInt(prompt("Enter number of grids you want to create.\nPlease enter number between 10-64!"));  
     }while(isNaN(newGridNo) || newGridNo < 1 || newGridNo > 64 || newGridNo == "null");
 
     createGrid(newGridNo);
@@ -85,19 +89,37 @@ function changeDimension() {
     startSketch("black");
 }
 
+//colorMode's value will decide which color to use while sketching
 function startSketch(colorMode) {
 
     grids.forEach(grid => grid.addEventListener("mouseover", giveGridColor));
+
+    //for optional challenge to create last black grid
+    let blackTrailPercentage = 10;
 
     function giveGridColor(event) {
 
         let selectedGrid = document.getElementById(event.srcElement.id);
 
+        let r = randomRgbValue(),
+            g = randomRgbValue(),
+            b = randomRgbValue();
+
         if(colorMode === "randomColor") {
 
-            selectedGrid.style.background = `rgb(${randomRgbValue()}, ${randomRgbValue()}, ${randomRgbValue()})`;
-        }
-        else {
+            selectedGrid.style.background = `rgb(${r}, ${g}, ${b})`;
+        }else if(colorMode == "black trail") {
+
+            selectedGrid.style.background = `rgb(${r - (r/blackTrailPercentage)},
+                ${g - (g/blackTrailPercentage)}, ${b - (b/blackTrailPercentage)})`;
+
+            blackTrailPercentage--;
+
+            if(blackTrailPercentage < 1) {
+                blackTrailPercentage = 10;
+            }
+            
+        }else {
             selectedGrid.style.background = colorMode;
         }
     }
